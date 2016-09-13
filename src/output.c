@@ -62,6 +62,7 @@
 #include "log-file.h"
 #include "output-json-file.h"
 #include "output-json-imap.h"
+#include "output-json-pop3.h"
 #include "output-json-smtp.h"
 #include "output-json-stats.h"
 #include "log-filestore.h"
@@ -1057,7 +1058,11 @@ void OutputRegisterLoggers(void)
     /* json log */
     OutputJsonRegister();
     /* email logs */
+<<<<<<< 7b988d338b11825f63de2b30633170dbcc96460b
     JsonImapLogRegister();
+=======
+    JsonPop3LogRegister();
+>>>>>>> app-layer-pop3: Add POP3 support.
     JsonSmtpLogRegister();
     /* http log */
     LogHttpLogRegister();

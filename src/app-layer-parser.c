@@ -53,6 +53,7 @@
 #include "app-layer-htp.h"
 #include "app-layer-imap.h"
 #include "app-layer-ftp.h"
+#include "app-layer-pop3.h"
 #include "app-layer-ssl.h"
 #include "app-layer-ssh.h"
 #include "app-layer-smtp.h"
@@ -1167,6 +1168,7 @@ void AppLayerParserRegisterProtocolParsers(void)
     RegisterDCERPCParsers();
     RegisterDCERPCUDPParsers();
     RegisterFTPParsers();
+    RegisterPOP3Parsers();
     RegisterSSHParsers();
     RegisterIMAPParsers();
     RegisterSMTPParsers();
