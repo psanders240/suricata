@@ -253,40 +253,46 @@ json_t *JsonEmailLogJsonData(const Flow *f, void *state, void *vtx, uint64_t tx_
     /* check if we have SMTP state or not */
     AppProto proto = FlowGetAppProtocol(f);
     switch (proto) {
-<<<<<<< 7b988d338b11825f63de2b30633170dbcc96460b
-        case ALPROTO_IMAP: {
-            imap_state = (IMAPState *)state;
-            if (imap_state == NULL) {
-                SCLogDebug("no imap state, so no request logging");
-                SCReturnPtr(NULL, "json_t");
+        case ALPROTO_IMAP:
+            {
+                imap_state = (IMAPState *)state;
+                if (imap_state == NULL) {
+                    SCLogDebug("no imap state, so no request logging");
+                    SCReturnPtr(NULL, "json_t");
+                }
+                IMAPTransaction *tx = vtx;
+                mime_state = tx->mime_state;
+                entity = tx->msg_tail;
+                SCLogDebug("lets go mime_state %p, entity %p, state_flag %u", mime_state, entity, mime_state ? mime_state->state_flag : 0);
             }
-            IMAPTransaction *tx = vtx;
-=======
-        case ALPROTO_POP3: {
-            pop3_state = (POP3State *)state;
-            if (pop3_state == NULL) {
-                SCLogDebug("no pop3 state, so no request logging");
-                SCReturnPtr(NULL, "json_t");
-            }
-            POP3Transaction *tx = vtx;
->>>>>>> app-layer-pop3: Add POP3 support.
-            mime_state = tx->mime_state;
-            entity = tx->msg_tail;
-            SCLogDebug("lets go mime_state %p, entity %p, state_flag %u", mime_state, entity, mime_state ? mime_state->state_flag : 0);
+            break;
+        case ALPROTO_POP3:
+            {
+                pop3_state = (POP3State *)state;
+                if (pop3_state == NULL) {
+                    SCLogDebug("no pop3 state, so no request logging");
+                    SCReturnPtr(NULL, "json_t");
+                }
+                POP3Transaction *tx = vtx;
+                mime_state = tx->mime_state;
+                entity = tx->msg_tail;
+                SCLogDebug("lets go mime_state %p, entity %p, state_flag %u", mime_state, entity, mime_state ? mime_state->state_flag : 0);
             }
             break;
         case ALPROTO_SMTP:
-            smtp_state = (SMTPState *)state;
-            if (smtp_state == NULL) {
-                SCLogDebug("no smtp state, so no request logging");
-                json_decref(sjs);
-                SCReturnPtr(NULL, "json_t");
+            {
+                smtp_state = (SMTPState *)state;
+                if (smtp_state == NULL) {
+                    SCLogDebug("no smtp state, so no request logging");
+                    json_decref(sjs);
+                    SCReturnPtr(NULL, "json_t");
+                }
+                SMTPTransaction *tx = vtx;
+                mime_state = tx->mime_state;
+                entity = tx->msg_tail;
+                SCLogDebug("lets go mime_state %p, entity %p, state_flag %u", mime_state, entity, mime_state ? mime_state->state_flag : 0);
+                break;
             }
-            SMTPTransaction *tx = vtx;
-            mime_state = tx->mime_state;
-            entity = tx->msg_tail;
-            SCLogDebug("lets go mime_state %p, entity %p, state_flag %u", mime_state, entity, mime_state ? mime_state->state_flag : 0);
-            break;
         default:
             /* don't know how we got here */
             json_decref(sjs);
