@@ -22,23 +22,20 @@ hardware based features:
 
 	* On board burst buffering (up to 12GB)
 
-	* Zero-copy kernel bypass DMA
+	* Zero-copy kernel bypass DMA (specific kernel versions or patches not required)
 
 	* Non-blocking PCIe performance
 
 	* Port merging
 
-	* Load distribution to up 128 host buffers
+	* Symetrical load distribution to up 128 host buffers (RSS)
 
 	* Precise timestamping
 
 	* Accurate time synchronization
-
-The Napatech Software Suite (driver package) comes in two varieties, NAC and OEM.
-The NAC package distributes deb and rpm packages to ease the installation.
-The OEM package uses a proprietary shell script to handle the installation process.
-In either case, gcc, make and the kernel header files are required to compile the kernel module and
-install the software.
+	
+	
+You can get the lastest version of the Napatech driver software here: https://www.napatech.com/downloads/
 
 
 Package Installation
@@ -48,39 +45,11 @@ Package Installation
 
 *Root privileges are also required*
 
-Napatech NAC Package
-^^^^^^^^^^^^^^^^^^^^
-
-Red Hat Based Distros::
-
-    $ yum install kernel-devel-$(uname -r) gcc make ncurses-libs
-    $ yum install nac-pcap-<release>.x86_64.rpm
-
-Some distributions will require you to use the --nogpgcheck option with yum for the NAC Software Suite package file::
-
-    $ yum --nogpgcheck install nac-pcap-<release>.x86_64.rpm
-
-Debian Based Distros::
-
-	$ apt-get install linux-headers-$(uname .r) gcc make libncurses5
-	$ dpkg .i nac-pcap_<release>_amd64.deb
-
-To complete installation for all distros stop ntservice::
-
-	$ /opt/napatech3/bin/ntstop.sh -m
-
-Remove these existing setup files::
-
-	$ cd /opt/napatech3/config
-	$ rm ntservice.ini setup.ini
-
-Restart ntservice (a new ntservice.ini configuration file will be generated automatically)::
-
-	$ /opt/napatech3/bin/ntstart.sh -m
+*These instructions are intended for Suricata 4.0.1 or later*
 
 
-Napatech OEM Package
-^^^^^^^^^^^^^^^^^^^^
+Napatech Package Installation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 *Note that you will be prompted to install the Napatech libpcap library. Answer "yes" if you would like to
 use the Napatech card to capture packets in WIreshark, tcpdump, or another pcap based application.
@@ -111,7 +80,7 @@ prepare for compilation::
 	$ make install-full
 
 Now edit the suricata.yaml file to configure the maximum number of streams to use. If you plan on using the load distribution
-(RSS - like) feature in the Napatech accelerator, then the list should contain the same number of streams as host buffers defined in
+(RSS) feature in the Napatech accelerator, then the list should contain the same number of streams as host buffers defined in
 ntservice.ini::
 
 	Napatech:
@@ -125,7 +94,7 @@ ntservice.ini::
 		use-all-streams: yes
 
 		# The streams to listen on
-		streams: [0, 1, 2, 3, 4, 5, 6, 7]
+		streams: [0 - 7]
 
 Note: hba is useful only when a stream is shared with another application.  When hba is enabled packets will be dropped
 (i.e. not delivered to suricata) when the host-buffer utilization reaches the high-water mark indicated by the hba value.
@@ -209,8 +178,8 @@ Now you are ready to start Suricata::
 
 	$ suricata -c /usr/local/etc/suricata/suricata.yaml --napatech --runmode workers
 
-Counters
---------
+Information Available in Suricata Logs
+--------------------------------------
 
 For each stream that is being processed the following counters will be output in stats.log:
 
@@ -224,7 +193,7 @@ If hba is enabled the following counter will also be provided:
 
 -  nt<streamid>.hba_drop - the number of packets dropped because the host buffer allowance high-water mark was reached.
 
-In addition to counters host buffer utilization is tracked and logged.  This is also useful for
+In addition to counters, host buffer utilization is tracked and logged.  This is also useful for
 debugging.  Log messages are output for both Host and On-Board buffers when reach 25, 50, 75
 percent of utilization.  Corresponding messages are output when utilization decreases.
 
