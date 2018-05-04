@@ -48,39 +48,11 @@ Package Installation
 
 *Root privileges are also required*
 
-Napatech NAC Package
-^^^^^^^^^^^^^^^^^^^^
 
-Red Hat Based Distros::
+Napatech Package Installation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    $ yum install kernel-devel-$(uname -r) gcc make ncurses-libs
-    $ yum install nac-pcap-<release>.x86_64.rpm
-
-Some distributions will require you to use the --nogpgcheck option with yum for the NAC Software Suite package file::
-
-    $ yum --nogpgcheck install nac-pcap-<release>.x86_64.rpm
-
-Debian Based Distros::
-
-	$ apt-get install linux-headers-$(uname .r) gcc make libncurses5
-	$ dpkg .i nac-pcap_<release>_amd64.deb
-
-To complete installation for all distros stop ntservice::
-
-	$ /opt/napatech3/bin/ntstop.sh -m
-
-Remove these existing setup files::
-
-	$ cd /opt/napatech3/config
-	$ rm ntservice.ini setup.ini
-
-Restart ntservice (a new ntservice.ini configuration file will be generated automatically)::
-
-	$ /opt/napatech3/bin/ntstart.sh -m
-
-
-Napatech OEM Package
-^^^^^^^^^^^^^^^^^^^^
+*The lastest Napatech driver software can alweays be found here: https://www.napatech.com/downloads/*
 
 *Note that you will be prompted to install the Napatech libpcap library. Answer "yes" if you would like to
 use the Napatech card to capture packets in WIreshark, tcpdump, or another pcap based application.
@@ -122,10 +94,10 @@ ntservice.ini::
 		# use_all_streams set to "yes" will query the Napatech service for all configured
 		# streams and listen on all of them. When set to "no" the streams config array
 		# will be used.
-		use-all-streams: yes
+		use-all-streams: no
 
 		# The streams to listen on
-		streams: [0, 1, 2, 3, 4, 5, 6, 7]
+		streams: [0 - 7]
 
 Note: hba is useful only when a stream is shared with another application.  When hba is enabled packets will be dropped
 (i.e. not delivered to suricata) when the host-buffer utilization reaches the high-water mark indicated by the hba value.
@@ -189,17 +161,10 @@ Stop and restart ntservice after making changes to ntservice::
 Now let's assign the streams to host buffers and configure the load distribution. The load distribution will be
 setup to support both tunneled and non-tunneled traffic. Create a file that contains the ntpl commands below::
 
-	Delete=All				# Delete any existing filters
-	Setup[numaNode=0] = streamid==0
-	Setup[numaNode=0] = streamid==1
-	Setup[numaNode=0] = streamid==2
-	Setup[numaNode=0] = streamid==3
-	Setup[numaNode=0] = streamid==4
-	Setup[numaNode=0] = streamid==5
-	Setup[numaNode=0] = streamid==6
-	Setup[numaNode=0] = streamid==7
-	HashMode[priority=4]=Hash5TupleSorted
-	Assign[priority=0; streamid=(0..7)]= all
+	Delete=All				   # Delete any existing streams / filters
+	Setup[numaNode=0] = streamid==(0..7)       # Create 8 srteams for 8 suricata workers
+	HashMode[priority=4]= Hash5TupleSorted     # Symetrical RSS load distribution
+	Assign[priority=0; streamid=(0..7)]= all   # Assign packets from all physical ports to the 8 streams
 
 Next execute those command using the ntpl tool::
 
